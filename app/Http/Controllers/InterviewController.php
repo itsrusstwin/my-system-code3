@@ -7,6 +7,7 @@ use App\Models\Position;
 use App\Models\Applicant;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Services\InterviewService;
 
 class InterviewController extends Controller
 {
@@ -24,6 +25,12 @@ class InterviewController extends Controller
         return view('interviews.create', compact('positions', 'applicants', 'users'));
     }
 
+    public function rankings(Interview $interview, InterviewService $interviewService)
+{
+    $interview->load('applicants');
+    $rankings = $interviewService->rankApplicants($interview);
+    return view('interviews.rankings', compact('interview', 'rankings'));
+}
     public function store(Request $request)
     {
         $validated = $request->validate([

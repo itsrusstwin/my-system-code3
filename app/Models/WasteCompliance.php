@@ -5,17 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ApplicantRequirement extends Model
+class WasteCompliance extends Model
 {
     use HasFactory;
 
+    protected $table = 'waste_compliances'; // explicit, since default would look for "waste_compliances" anyway, but good to be clear
+
     protected $fillable = [
         'applicant_id',
-        'requirement_id',
-        'is_submitted',
-        'submitted_at',
+        'semester',
+        'kilos_required',
+        'kilos_submitted',
+        'is_compliant',
     ];
 
-    public function requirement() { return $this->belongsTo(Requirement::class); }
     public function applicant() { return $this->belongsTo(Applicant::class); }
 }

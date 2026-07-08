@@ -11,31 +11,20 @@ class Applicant extends Model
 
     protected $fillable = [
         'first_name',
-        'middle_name',
         'last_name',
-        'extension_name',
-        'gender',
-        'birthdate',
-        'civil_status',
-        'address',
-        'position_id',
+        'school_id',
+        'grade_average',
+        'program_type',
+        'status',
+        'family_household_id',
     ];
 
-    public function position()
-    {
-        return $this->belongsTo(Position::class);
-    }
-
-    // Interviews this applicant is part of
-    public function interviews()
-    {
-        return $this->belongsToMany(Interview::class, 'interview_applicants')
-            ->withTimestamps();
-    }
-
-    // Direct access to the pivot records (needed for scoring)
-    public function interviewApplicants()
-    {
-        return $this->hasMany(InterviewApplicant::class);
-    }
+    public function requirements() { return $this->hasMany(ApplicantRequirement::class); }
+    public function verification() { return $this->hasOne(ProgramVerification::class); }
+    public function mswdoAssessment() { return $this->hasOne(MswdoAssessment::class); }
+    public function examResults() { return $this->hasMany(ExamResult::class); }
+    public function orientation() { return $this->hasOne(Orientation::class); }
+    public function wasteCompliance() { return $this->hasMany(WasteCompliance::class); }
+    public function payouts() { return $this->hasMany(Payout::class); }
+    public function disqualifications() { return $this->hasMany(Disqualification::class); }
 }

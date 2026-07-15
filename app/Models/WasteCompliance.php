@@ -9,7 +9,7 @@ class WasteCompliance extends Model
 {
     use HasFactory;
 
-    protected $table = 'waste_compliances'; // explicit, since default would look for "waste_compliances" anyway, but good to be clear
+    protected $table = 'waste_compliances';
 
     protected $fillable = [
         'applicant_id',
@@ -19,5 +19,8 @@ class WasteCompliance extends Model
         'is_compliant',
     ];
 
-    public function applicant() { return $this->belongsTo(Applicant::class); }
+    public function applicant()
+    {
+        return $this->belongsTo(Applicant::class);
+    }
 }

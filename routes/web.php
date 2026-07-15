@@ -1,70 +1,94 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PositionController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ApplicantController;
-use App\Http\Controllers\InterviewController;
-use App\Http\Controllers\InterviewerController;
-use App\Http\Controllers\QuestionController;
-use App\Http\Controllers\InterviewerScoreController;
+use App\Http\Controllers\PolicyVerificationController;
+use App\Http\Controllers\MswdoAssessmentController;
+use App\Http\Controllers\ExamResultController;
+use App\Http\Controllers\OrientationController;
+use App\Http\Controllers\WasteComplianceController;
+use App\Http\Controllers\PayoutController;
+use App\Http\Controllers\AppealController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\EditProfileController;
+use App\Http\Controllers\RequirementUploadController;
 
-// Default welcome page
-Route::get('/', function () {
-    return view('welcome');
+
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile/edit', [EditProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [EditProfileController::class, 'update'])->name('profile.update');
+});
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/about', [HomeController::class, 'about'])->name('about');
+Route::get('/guides', [HomeController::class, 'guides'])->name('guides');
+
+Route::post('/requirements/{requirement}/upload', [RequirementUploadController::class, 'store'])->name('requirements.upload');
+
+// -----------------------------
+// Authentication
+// -----------------------------
+Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
+
+
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
+
+
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
+Route::get('/register', [RegisterController::class, 'create'])->name('register');
+Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+
+// -----------------------------
+// Public-facing (applicant side) — no login required
+// -----------------------------
+
+Route::get('/applicants/{applicant}', [ApplicantController::class, 'show'])->name('applicants.show');
+Route::post('/appeals', [AppealController::class, 'store'])->name('appeals.store');
+
+// -----------------------------
+// Complete Profile — requires login (Step 2 of registration)
+// -----------------------------
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/dashboard', [DashboardController::class, 'store'])->name('applicants.store');
 });
 
 // -----------------------------
-// Positions
+// Admin side — requires login
 // -----------------------------
-Route::get('/positions', [PositionController::class, 'index'])->name('positions.index');
-Route::get('/positions/create', [PositionController::class, 'create'])->name('positions.create');
-Route::post('/positions', [PositionController::class, 'store'])->name('positions.store');
-Route::get('/positions/{position}/edit', [PositionController::class, 'edit'])->name('positions.edit');
-Route::put('/positions/{position}', [PositionController::class, 'update'])->name('positions.update');
-Route::delete('/positions/{position}', [PositionController::class, 'destroy'])->name('positions.destroy');
+Route::middleware('auth')->prefix('admin')->group(function () {
+    Route::get('/dashboard', [ApplicantController::class, 'index'])->name('admin.dashboard');
 
-// -----------------------------
-// Applicants
-// -----------------------------
-Route::get('/applicants', [ApplicantController::class, 'index'])->name('applicants.index');
-Route::get('/applicants/create', [ApplicantController::class, 'create'])->name('applicants.create');
-Route::post('/applicants', [ApplicantController::class, 'store'])->name('applicants.store');
-Route::get('/applicants/{applicant}', [ApplicantController::class, 'show'])->name('applicants.show');
-Route::get('/applicants/{applicant}/edit', [ApplicantController::class, 'edit'])->name('applicants.edit');
-Route::put('/applicants/{applicant}', [ApplicantController::class, 'update'])->name('applicants.update');
-Route::delete('/applicants/{applicant}', [ApplicantController::class, 'destroy'])->name('applicants.destroy');
+    Route::post('/applicants/{applicant}/verify-policy', [PolicyVerificationController::class, 'verify'])
+        ->name('admin.verify-policy');
 
-// -----------------------------
-// Interviews
-// -----------------------------
-Route::get('/interviews', [InterviewController::class, 'index'])->name('interviews.index');
-Route::get('/interviews/create', [InterviewController::class, 'create'])->name('interviews.create');
-Route::post('/interviews', [InterviewController::class, 'store'])->name('interviews.store');
-Route::get('/interviews/{interview}', [InterviewController::class, 'show'])->name('interviews.show');
-Route::put('/interviews/{interview}', [InterviewController::class, 'update'])->name('interviews.update');
-Route::delete('/interviews/{interview}', [InterviewController::class, 'destroy'])->name('interviews.destroy');
+    Route::post('/applicants/{applicant}/mswdo-assess', [MswdoAssessmentController::class, 'assess'])
+        ->name('admin.mswdo-assess');
 
-// -----------------------------
-// Interviewers (panel members on an interview)
-// -----------------------------
-Route::post('/interviews/{interview}/interviewers', [InterviewerController::class, 'store'])->name('interviewers.store');
-Route::delete('/interviewers/{interviewer}', [InterviewerController::class, 'destroy'])->name('interviewers.destroy');
+    Route::post('/applicants/{applicant}/exam-result', [ExamResultController::class, 'store'])
+        ->name('admin.exam-result');
 
-// -----------------------------
-// Questions
-// -----------------------------
-Route::get('/questions', [QuestionController::class, 'index'])->name('questions.index');
-Route::get('/questions/create', [QuestionController::class, 'create'])->name('questions.create');
-Route::post('/questions', [QuestionController::class, 'store'])->name('questions.store');
-Route::get('/questions/{question}/edit', [QuestionController::class, 'edit'])->name('questions.edit');
-Route::put('/questions/{question}', [QuestionController::class, 'update'])->name('questions.update');
-Route::delete('/questions/{question}', [QuestionController::class, 'destroy'])->name('questions.destroy');
+    Route::post('/applicants/{applicant}/orientation', [OrientationController::class, 'complete'])
+        ->name('admin.orientation');
 
-// Attach an existing question to a specific interview
-Route::post('/interviews/{interview}/questions', [QuestionController::class, 'attachToInterview'])->name('interviews.questions.attach');
+    Route::post('/applicants/{applicant}/waste-compliance', [WasteComplianceController::class, 'store'])
+        ->name('admin.waste-compliance');
 
-// -----------------------------
-// Interviewer Scores
-// -----------------------------
-Route::post('/interviews/{interview}/scores', [InterviewerScoreController::class, 'store'])->name('scores.store');
-Route::put('/scores/{interviewerScore}', [InterviewerScoreController::class, 'update'])->name('scores.update');
+    Route::post('/applicants/{applicant}/payout', [PayoutController::class, 'release'])
+        ->name('admin.payout');
+});

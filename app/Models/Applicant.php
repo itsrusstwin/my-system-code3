@@ -10,14 +10,26 @@ class Applicant extends Model
     use HasFactory;
 
     protected $fillable = [
-        'first_name',
-        'last_name',
-        'school_id',
-        'grade_average',
-        'program_type',
-        'status',
-        'family_household_id',
-    ];
+    'user_id',
+    'first_name',
+    'last_name',
+    'school_id',
+    'program_type',
+    'status',
+    'family_household_id',
+    'contact_number',
+    'barangay',
+    'course',
+    'year_level',
+    'school_name',
+    'province',
+    'city_municipality',
+];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function requirements() { return $this->hasMany(ApplicantRequirement::class); }
     public function verification() { return $this->hasOne(ProgramVerification::class); }

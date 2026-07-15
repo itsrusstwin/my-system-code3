@@ -3,14 +3,21 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use App\Models\Requirement;
 
-class DatabaseSeeder extends Seeder
+class RequirementSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call([
-            PositionSeeder::class,
-            QuestionSeeder::class,
-        ]);
+        $requirements = [
+            'Certified True Copy of Grades (First Semester)',
+            'Photocopy PSA Birth Certificate',
+            'Photocopy Latest School ID',
+            'Long Brown Envelope',
+        ];
+
+        foreach ($requirements as $name) {
+            Requirement::create(['name' => $name]);
+        }
     }
 }
